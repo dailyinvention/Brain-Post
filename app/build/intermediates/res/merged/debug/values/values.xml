@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From: file:/Users/dailyinvention/Documents/apps/BrainPost/app/src/main/res/values/strings.xml -->
+    <eat-comment/>
+    <string name="app_name">Brain Post</string>
+    <string name="hello">Hello World, HelloEEGActivity!</string>
+</resources>

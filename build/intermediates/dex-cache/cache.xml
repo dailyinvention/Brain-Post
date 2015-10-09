@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        jar="/Users/dailyinvention/Documents/apps/BrainPost/app/libs/ThinkGear.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="b4f0f0a355dcc5315e5bef25b775beaa52b2d208">
+        <dex dex="/Users/dailyinvention/Documents/apps/BrainPost/app/build/intermediates/pre-dexed/debug/ThinkGear-627bfc215ce2926bce582f894b12cdda67cbdac5.jar" />
+    </item>
+
+</items>
