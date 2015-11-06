@@ -28,7 +28,7 @@ public class BrainPost extends Activity {
         setContentView(R.layout.main);
         tv = (TextView)findViewById(R.id.textView1);
         tv.setText("");
-        tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
+        //tv.append("Android version: " + Integer.valueOf(android.os.Build.VERSION.SDK) + "\n" );
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null) {
         	// Alert user that Bluetooth is not available
@@ -80,10 +80,6 @@ public class BrainPost extends Activity {
             		//signal = msg.arg1;
             		tv.append("PoorSignal: " + msg.arg1 + "\n");
                 break;
-            case TGDevice.MSG_RAW_DATA:	  
-            		//raw1 = msg.arg1;
-            		//tv.append("Got raw: " + msg.arg1 + "\n");
-            	break;
             case TGDevice.MSG_HEART_RATE:
         		tv.append("Heart rate: " + msg.arg1 + "\n");
                 break;
@@ -93,7 +89,7 @@ public class BrainPost extends Activity {
             		//Log.v("HelloA", "Attention: " + att + "\n");
             	break;
             case TGDevice.MSG_MEDITATION:
-
+                    tv.append("Mediation: " + msg.arg1 + "\n");
             	break;
             case TGDevice.MSG_BLINK:
             		tv.append("Blink: " + msg.arg1 + "\n");
@@ -104,9 +100,18 @@ public class BrainPost extends Activity {
             case TGDevice.MSG_LOW_BATTERY:
             	Toast.makeText(getApplicationContext(), "Low battery!", Toast.LENGTH_SHORT).show();
             	break;
-            case TGDevice.MSG_RAW_MULTI:
-            	//TGRawMulti rawM = (TGRawMulti)msg.obj;
-            	//tv.append("Raw1: " + rawM.ch1 + "\nRaw2: " + rawM.ch2);
+            case TGDevice.MSG_EEG_POWER:
+            	TGEegPower eegPower = (TGEegPower)msg.obj;
+            	tv.append("Delta: " + eegPower.delta +
+                        "\nTheta: " + eegPower.theta +
+                        "\nAlpha1: " + eegPower.lowAlpha +
+                        "\nAlpha2: " + eegPower.highAlpha +
+                        "\nBeta1: " + eegPower.lowBeta +
+                        "\nBeta2: " + eegPower.highBeta +
+                        "\nGamma1: " + eegPower.lowGamma +
+                        "\nGamma2: " + eegPower.midGamma + "\n\n");
+
+				break;
             default:
             	break;
         }
