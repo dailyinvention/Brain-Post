@@ -5,12 +5,28 @@ import android.bluetooth.BluetoothAdapter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.neurosky.thinkgear.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+
+import com.neurosky.thinkgear.TGDevice;
+import com.neurosky.thinkgear.TGEegPower;
+
+import java.io.InputStream;
+import java.util.ArrayList;
 
 public class BrainPost extends Activity {
 	BluetoothAdapter bluetoothAdapter;
@@ -20,6 +36,11 @@ public class BrainPost extends Activity {
 	
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
+
+    InputStream is = null;
+    String connection = "http://192.168.1.118:8080/api/brainpost/";
+    int heartrate;
+    ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
 	
     /** Called when the activity is first created. */
     @Override
@@ -34,7 +55,6 @@ public class BrainPost extends Activity {
         	// Alert user that Bluetooth is not available
         	Toast.makeText(this, "Bluetooth not available", Toast.LENGTH_LONG).show();
         	finish();
-        	return;
         }else {
         	/* create the TGDevice */
         	tgDevice = new TGDevice(bluetoothAdapter, handler);
@@ -49,7 +69,7 @@ public class BrainPost extends Activity {
     /**
      * Handles messages from TGDevice
      */
-    private final Handler handler = new Handler() {
+    public final Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
         	switch (msg.what) {
@@ -82,14 +102,17 @@ public class BrainPost extends Activity {
                 break;
             case TGDevice.MSG_HEART_RATE:
         		tv.append("Heart rate: " + msg.arg1 + "\n");
+                nameValuePairs.add(new BasicNameValuePair("heartrate", Integer.toString(msg.arg1)));
                 break;
             case TGDevice.MSG_ATTENTION:
             		//att = msg.arg1;
             		tv.append("Attention: " + msg.arg1 + "\n");
+                    nameValuePairs.add(new BasicNameValuePair("attention", Integer.toString(msg.arg1)));
             		//Log.v("HelloA", "Attention: " + att + "\n");
             	break;
             case TGDevice.MSG_MEDITATION:
                     tv.append("Mediation: " + msg.arg1 + "\n");
+                    nameValuePairs.add(new BasicNameValuePair("meditation", Integer.toString(msg.arg1)));
             	break;
             case TGDevice.MSG_BLINK:
             		tv.append("Blink: " + msg.arg1 + "\n");
@@ -110,11 +133,31 @@ public class BrainPost extends Activity {
                         "\nBeta2: " + eegPower.highBeta +
                         "\nGamma1: " + eegPower.lowGamma +
                         "\nGamma2: " + eegPower.midGamma + "\n\n");
+                        int alpha = (eegPower.lowAlpha + eegPower.highAlpha)/2;
+                        int beta = (eegPower.lowBeta + eegPower.highBeta)/2;
+                        int gamma = (eegPower.lowGamma + eegPower.midGamma)/2;
+                        nameValuePairs.add(new BasicNameValuePair("delta", Integer.toString(eegPower.delta)));
+                        nameValuePairs.add(new BasicNameValuePair("theta", Integer.toString(eegPower.theta)));
+                        nameValuePairs.add(new BasicNameValuePair("alpha", Integer.toString(alpha)));
+                        nameValuePairs.add(new BasicNameValuePair("beta", Integer.toString(beta)));
+                        nameValuePairs.add(new BasicNameValuePair("gamma", Integer.toString(gamma)));
 
 				break;
             default:
             	break;
         }
+
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                HttpPost httppost = new HttpPost(connection);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                HttpResponse response = httpclient.execute(httppost);
+                HttpEntity entity = response.getEntity();
+                is = entity.getContent();
+                Log.d("HTTP", "HTTP: OK");
+            } catch (Exception e) {
+                Log.e("HTTP", "Error in http connection " + e.toString());
+            }
         }
     };
     
