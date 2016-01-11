@@ -9,4 +9,3 @@
     </ScrollView>
     <Button android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/button1" android:text="Connect" android:onClick="doStuff"></Button>
 </LinearLayout>
-<!-- From: file:/Users/dailyinvention/Documents/apps/BrainPost/app/src/main/res/layout/main.xml -->

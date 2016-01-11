@@ -25,23 +25,26 @@ import org.apache.http.message.BasicNameValuePair;
 import com.neurosky.thinkgear.TGDevice;
 import com.neurosky.thinkgear.TGEegPower;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class BrainPost extends Activity {
 	BluetoothAdapter bluetoothAdapter;
-	
+
 	TextView tv;
 	Button b;
-	
+
 	TGDevice tgDevice;
 	final boolean rawEnabled = false;
 
     InputStream is = null;
-    String connection = "http://192.168.1.118:8080/api/brainpost/";
+    String connection = "http://192.168.1.118:8080/api/neurobrainpost";
     int heartrate;
-    ArrayList<NameValuePair> nameValuePairs = new ArrayList<>();
-	
+    List<NameValuePair> nameValuePairs = new ArrayList<>();
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -58,9 +61,10 @@ public class BrainPost extends Activity {
         }else {
         	/* create the TGDevice */
         	tgDevice = new TGDevice(bluetoothAdapter, handler);
-        }  
+
+        }
     }
-    
+
     @Override
     public void onDestroy() {
     	tgDevice.close();
@@ -78,9 +82,9 @@ public class BrainPost extends Activity {
                 switch (msg.arg1) {
 	                case TGDevice.STATE_IDLE:
 	                    break;
-	                case TGDevice.STATE_CONNECTING:		                	
+	                case TGDevice.STATE_CONNECTING:
 	                	tv.append("Connecting...\n");
-	                	break;		                    
+	                	break;
 	                case TGDevice.STATE_CONNECTED:
 	                	tv.append("Connected.\n");
 	                	tgDevice.start();
@@ -145,25 +149,47 @@ public class BrainPost extends Activity {
 				break;
             default:
             	break;
-        }
-
-            try {
-                HttpClient httpclient = new DefaultHttpClient();
-                HttpPost httppost = new HttpPost(connection);
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-                HttpResponse response = httpclient.execute(httppost);
-                HttpEntity entity = response.getEntity();
-                is = entity.getContent();
-                Log.d("HTTP", "HTTP: OK");
-            } catch (Exception e) {
-                Log.e("HTTP", "Error in http connection " + e.toString());
             }
+
+            HttpClient httpclient = HttpClientBuilder.create().build();
+
+            HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
+            HttpResponse response;
+
+            httpPost.setHeader("Content-Type",
+                    "application/x-www-form-urlencoded;charset=UTF-8");
+            try {
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "utf-8"));
+                httpclient.execute(httpPost);
+
+                //Get the response
+                response = httpclient.execute(httpPost);
+
+                int responseCode = response.getStatusLine().getStatusCode();
+                String responseText = Integer.toString(responseCode);
+                System.out.println("HTTP POST : " + responseText);
+
+                nameValuePairs.clear();
+
+         /*Checking response */
+
+                    InputStream in = response.getEntity().getContent(); //Get the data in the entity
+                    System.out.println("HTTP POST : " + in.toString());
+
+                //Print result
+                System.out.println(response.toString());
+
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
         }
     };
-    
+
     public void doStuff(View view) {
     	if(tgDevice.getState() != TGDevice.STATE_CONNECTING && tgDevice.getState() != TGDevice.STATE_CONNECTED)
-    		tgDevice.connect(rawEnabled);   
+    		tgDevice.connect(rawEnabled);
     	//tgDevice.ena
     }
 }

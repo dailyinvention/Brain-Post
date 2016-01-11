@@ -19,4 +19,5 @@ android {
 
 dependencies {
     compile files('libs/ThinkGear.jar')
+    compile group: 'org.apache.httpcomponents' , name: 'httpclient-android' , version: '4.3.5.1'
 }
