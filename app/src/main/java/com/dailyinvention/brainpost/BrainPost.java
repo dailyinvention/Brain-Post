@@ -2,6 +2,7 @@ package com.dailyinvention.brainpost;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -28,6 +29,7 @@ import com.neurosky.thinkgear.TGEegPower;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,96 +72,22 @@ public class BrainPost extends Activity {
     	tgDevice.close();
         super.onDestroy();
     }
-    /**
-     * Handles messages from TGDevice
-     */
-    public final Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-        	switch (msg.what) {
-            case TGDevice.MSG_STATE_CHANGE:
 
-                switch (msg.arg1) {
-	                case TGDevice.STATE_IDLE:
-	                    break;
-	                case TGDevice.STATE_CONNECTING:
-	                	tv.append("Connecting...\n");
-	                	break;
-	                case TGDevice.STATE_CONNECTED:
-	                	tv.append("Connected.\n");
-	                	tgDevice.start();
-	                    break;
-	                case TGDevice.STATE_NOT_FOUND:
-	                	tv.append("Can't find\n");
-	                	break;
-	                case TGDevice.STATE_NOT_PAIRED:
-	                	tv.append("not paired\n");
-	                	break;
-	                case TGDevice.STATE_DISCONNECTED:
-	                	tv.append("Disconnected mang\n");
-                }
+    private class PostBrainInput extends AsyncTask<List<NameValuePair>, Void, Void> {
 
-                break;
-            case TGDevice.MSG_POOR_SIGNAL:
-            		//signal = msg.arg1;
-            		tv.append("PoorSignal: " + msg.arg1 + "\n");
-                break;
-            case TGDevice.MSG_HEART_RATE:
-        		tv.append("Heart rate: " + msg.arg1 + "\n");
-                nameValuePairs.add(new BasicNameValuePair("heartrate", Integer.toString(msg.arg1)));
-                break;
-            case TGDevice.MSG_ATTENTION:
-            		//att = msg.arg1;
-            		tv.append("Attention: " + msg.arg1 + "\n");
-                    nameValuePairs.add(new BasicNameValuePair("attention", Integer.toString(msg.arg1)));
-            		//Log.v("HelloA", "Attention: " + att + "\n");
-            	break;
-            case TGDevice.MSG_MEDITATION:
-                    tv.append("Mediation: " + msg.arg1 + "\n");
-                    nameValuePairs.add(new BasicNameValuePair("meditation", Integer.toString(msg.arg1)));
-            	break;
-            case TGDevice.MSG_BLINK:
-            		tv.append("Blink: " + msg.arg1 + "\n");
-            	break;
-            case TGDevice.MSG_RAW_COUNT:
-            		//tv.append("Raw Count: " + msg.arg1 + "\n");
-            	break;
-            case TGDevice.MSG_LOW_BATTERY:
-            	Toast.makeText(getApplicationContext(), "Low battery!", Toast.LENGTH_SHORT).show();
-            	break;
-            case TGDevice.MSG_EEG_POWER:
-            	TGEegPower eegPower = (TGEegPower)msg.obj;
-            	tv.append("Delta: " + eegPower.delta +
-                        "\nTheta: " + eegPower.theta +
-                        "\nAlpha1: " + eegPower.lowAlpha +
-                        "\nAlpha2: " + eegPower.highAlpha +
-                        "\nBeta1: " + eegPower.lowBeta +
-                        "\nBeta2: " + eegPower.highBeta +
-                        "\nGamma1: " + eegPower.lowGamma +
-                        "\nGamma2: " + eegPower.midGamma + "\n\n");
-                        int alpha = (eegPower.lowAlpha + eegPower.highAlpha)/2;
-                        int beta = (eegPower.lowBeta + eegPower.highBeta)/2;
-                        int gamma = (eegPower.lowGamma + eegPower.midGamma)/2;
-                        nameValuePairs.add(new BasicNameValuePair("delta", Integer.toString(eegPower.delta)));
-                        nameValuePairs.add(new BasicNameValuePair("theta", Integer.toString(eegPower.theta)));
-                        nameValuePairs.add(new BasicNameValuePair("alpha", Integer.toString(alpha)));
-                        nameValuePairs.add(new BasicNameValuePair("beta", Integer.toString(beta)));
-                        nameValuePairs.add(new BasicNameValuePair("gamma", Integer.toString(gamma)));
-
-				break;
-            default:
-            	break;
-            }
-
+        @SafeVarargs
+        protected final Void doInBackground(List<NameValuePair>... postList) {
             HttpClient httpclient = HttpClientBuilder.create().build();
 
             HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
             HttpResponse response;
 
+            List<NameValuePair> postListNV = postList[0];
+
             httpPost.setHeader("Content-Type",
                     "application/x-www-form-urlencoded;charset=UTF-8");
             try {
-                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs, "utf-8"));
+                httpPost.setEntity(new UrlEncodedFormEntity(postListNV, "utf-8"));
                 httpclient.execute(httpPost);
 
                 //Get the response
@@ -169,12 +97,12 @@ public class BrainPost extends Activity {
                 String responseText = Integer.toString(responseCode);
                 System.out.println("HTTP POST : " + responseText);
 
-                nameValuePairs.clear();
+
 
          /*Checking response */
 
-                    InputStream in = response.getEntity().getContent(); //Get the data in the entity
-                    System.out.println("HTTP POST : " + in.toString());
+                InputStream in = response.getEntity().getContent(); //Get the data in the entity
+                System.out.println("HTTP POST : " + in.toString());
 
                 //Print result
                 System.out.println(response.toString());
@@ -184,6 +112,96 @@ public class BrainPost extends Activity {
                 e.printStackTrace();
             }
 
+
+            return null;
+        }
+
+
+
+    }
+
+    /**
+     * Handles messages from TGDevice
+     */
+    private final Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case TGDevice.MSG_STATE_CHANGE:
+                    nameValuePairs.clear();
+                    switch (msg.arg1) {
+                        case TGDevice.STATE_IDLE:
+                            break;
+                        case TGDevice.STATE_CONNECTING:
+                            tv.append("Connecting...\n");
+                            break;
+                        case TGDevice.STATE_CONNECTED:
+                            tv.append("Connected.\n");
+                            tgDevice.start();
+                            break;
+                        case TGDevice.STATE_NOT_FOUND:
+                            tv.append("Can't find\n");
+                            break;
+                        case TGDevice.STATE_NOT_PAIRED:
+                            tv.append("not paired\n");
+                            break;
+                        case TGDevice.STATE_DISCONNECTED:
+                            tv.append("Disconnected mang\n");
+                    }
+
+                    break;
+                case TGDevice.MSG_POOR_SIGNAL:
+                    //signal = msg.arg1;
+                    tv.append("PoorSignal: " + msg.arg1 + "\n");
+                    break;
+                case TGDevice.MSG_HEART_RATE:
+                    tv.append("Heart rate: " + msg.arg1 + "\n");
+                    nameValuePairs.add(new BasicNameValuePair("heartrate", Integer.toString(msg.arg1)));
+                    break;
+                case TGDevice.MSG_ATTENTION:
+                    //att = msg.arg1;
+                    tv.append("Attention: " + msg.arg1 + "\n");
+                    nameValuePairs.add(new BasicNameValuePair("attention", Integer.toString(msg.arg1)));
+                    //Log.v("HelloA", "Attention: " + att + "\n");
+                    break;
+                case TGDevice.MSG_MEDITATION:
+                    tv.append("Mediation: " + msg.arg1 + "\n");
+                    nameValuePairs.add(new BasicNameValuePair("meditation", Integer.toString(msg.arg1)));
+                    break;
+                case TGDevice.MSG_BLINK:
+                    tv.append("Blink: " + msg.arg1 + "\n");
+                    break;
+                case TGDevice.MSG_RAW_COUNT:
+                    //tv.append("Raw Count: " + msg.arg1 + "\n");
+                    break;
+                case TGDevice.MSG_LOW_BATTERY:
+                    Toast.makeText(getApplicationContext(), "Low battery!", Toast.LENGTH_SHORT).show();
+                    break;
+                case TGDevice.MSG_EEG_POWER:
+                    TGEegPower eegPower = (TGEegPower) msg.obj;
+                    tv.append("Delta: " + eegPower.delta +
+                            "\nTheta: " + eegPower.theta +
+                            "\nAlpha1: " + eegPower.lowAlpha +
+                            "\nAlpha2: " + eegPower.highAlpha +
+                            "\nBeta1: " + eegPower.lowBeta +
+                            "\nBeta2: " + eegPower.highBeta +
+                            "\nGamma1: " + eegPower.lowGamma +
+                            "\nGamma2: " + eegPower.midGamma + "\n\n");
+                    int alpha = (eegPower.lowAlpha + eegPower.highAlpha) / 2;
+                    int beta = (eegPower.lowBeta + eegPower.highBeta) / 2;
+                    int gamma = (eegPower.lowGamma + eegPower.midGamma) / 2;
+                    nameValuePairs.add(new BasicNameValuePair("delta", Integer.toString(eegPower.delta)));
+                    nameValuePairs.add(new BasicNameValuePair("theta", Integer.toString(eegPower.theta)));
+                    nameValuePairs.add(new BasicNameValuePair("alpha", Integer.toString(alpha)));
+                    nameValuePairs.add(new BasicNameValuePair("beta", Integer.toString(beta)));
+                    nameValuePairs.add(new BasicNameValuePair("gamma", Integer.toString(gamma)));
+
+                    break;
+                default:
+                    break;
+            }
+
+            new PostBrainInput().execute(nameValuePairs);
         }
     };
 
