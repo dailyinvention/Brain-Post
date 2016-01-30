@@ -32,6 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BrainPost extends Activity {
 	BluetoothAdapter bluetoothAdapter;
@@ -45,7 +46,8 @@ public class BrainPost extends Activity {
     InputStream is = null;
     String connection = "http://192.168.1.118:8080/api/neurobrainpost";
     int heartrate;
-    List<NameValuePair> nameValuePairs = new ArrayList<>();
+    List<NameValuePair> nameValuePairs = new CopyOnWriteArrayList<>();
+    private AsyncTask PostBrain;
 
     /** Called when the activity is first created. */
     @Override
@@ -72,7 +74,7 @@ public class BrainPost extends Activity {
     	tgDevice.close();
         super.onDestroy();
     }
-
+/*
     private class PostBrainInput extends AsyncTask<List<NameValuePair>, Void, Void> {
 
         @SafeVarargs
@@ -82,44 +84,51 @@ public class BrainPost extends Activity {
             HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
             HttpResponse response;
 
-            List<NameValuePair> postListNV = postList[0];
-
             httpPost.setHeader("Content-Type",
                     "application/x-www-form-urlencoded;charset=UTF-8");
             try {
-                httpPost.setEntity(new UrlEncodedFormEntity(postListNV, "utf-8"));
+                httpPost.setEntity(new UrlEncodedFormEntity(postList[0]));
                 httpclient.execute(httpPost);
 
                 //Get the response
-                response = httpclient.execute(httpPost);
 
-                int responseCode = response.getStatusLine().getStatusCode();
-                String responseText = Integer.toString(responseCode);
-                System.out.println("HTTP POST : " + responseText);
+
+                    response = httpclient.execute(httpPost);
+
+                    int responseCode = response.getStatusLine().getStatusCode();
+                    String responseText = Integer.toString(responseCode);
+                    Log.i("HTTP POST:", "HTTP POST : " + responseText);
 
 
 
          /*Checking response */
+/*
+                    InputStream in = response.getEntity().getContent(); //Get the data in the entity
+                    Log.i("HTTP RESPONSE", "HTTP POST : " + in.toString());
 
-                InputStream in = response.getEntity().getContent(); //Get the data in the entity
-                System.out.println("HTTP POST : " + in.toString());
+                    //Print result
+                    Log.i("HTTP Result:", response.toString());
 
-                //Print result
-                System.out.println(response.toString());
+
 
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.e("HTTP Error:", e.toString());
             }
 
 
             return null;
         }
 
+        protected void onPostExecute(Void result) {
+            nameValuePairs = new ArrayList<>();
+        }
+
+
 
 
     }
-
+*/
     /**
      * Handles messages from TGDevice
      */
@@ -201,7 +210,45 @@ public class BrainPost extends Activity {
                     break;
             }
 
-            new PostBrainInput().execute(nameValuePairs);
+            HttpClient httpclient = HttpClientBuilder.create().build();
+
+            HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
+            HttpResponse response;
+
+            httpPost.setHeader("Content-Type",
+                    "application/x-www-form-urlencoded;charset=UTF-8");
+            try {
+                httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                httpclient.execute(httpPost);
+
+                //Get the response
+
+
+                response = httpclient.execute(httpPost);
+
+                int responseCode = response.getStatusLine().getStatusCode();
+                String responseText = Integer.toString(responseCode);
+                Log.i("HTTP POST:", "HTTP POST : " + responseText);
+                nameValuePairs.clear();
+
+
+         /*Checking response */
+
+                InputStream in = response.getEntity().getContent(); //Get the data in the entity
+                Log.i("HTTP RESPONSE", "HTTP POST : " + in.toString());
+
+                //Print result
+                Log.i("HTTP Result:", response.toString());
+
+
+
+
+            } catch (IOException e) {
+            
+                Log.e("HTTP Error:", e.toString());
+            }
+
+
         }
     };
 
