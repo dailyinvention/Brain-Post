@@ -49,6 +49,14 @@ public class BrainPost extends Activity {
     List<NameValuePair> nameValuePairs = new CopyOnWriteArrayList<>();
     private AsyncTask PostBrain;
 
+    int alpha;
+    int beta;
+    int gamma;
+    int delta;
+    int theta;
+    int meditation;
+    int attention;
+
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -134,8 +142,14 @@ public class BrainPost extends Activity {
      */
     private final Handler handler = new Handler() {
         @Override
+
         public void handleMessage(Message msg) {
+
+
             switch (msg.what) {
+
+
+
                 case TGDevice.MSG_STATE_CHANGE:
                     nameValuePairs.clear();
                     switch (msg.arg1) {
@@ -170,18 +184,15 @@ public class BrainPost extends Activity {
                 case TGDevice.MSG_ATTENTION:
                     //att = msg.arg1;
                     tv.append("Attention: " + msg.arg1 + "\n");
-                    nameValuePairs.add(new BasicNameValuePair("attention", Integer.toString(msg.arg1)));
+                    attention = msg.arg1;
                     //Log.v("HelloA", "Attention: " + att + "\n");
                     break;
                 case TGDevice.MSG_MEDITATION:
                     tv.append("Mediation: " + msg.arg1 + "\n");
-                    nameValuePairs.add(new BasicNameValuePair("meditation", Integer.toString(msg.arg1)));
+                    meditation = msg.arg1;
                     break;
                 case TGDevice.MSG_BLINK:
                     tv.append("Blink: " + msg.arg1 + "\n");
-                    break;
-                case TGDevice.MSG_RAW_COUNT:
-                    //tv.append("Raw Count: " + msg.arg1 + "\n");
                     break;
                 case TGDevice.MSG_LOW_BATTERY:
                     Toast.makeText(getApplicationContext(), "Low battery!", Toast.LENGTH_SHORT).show();
@@ -196,19 +207,25 @@ public class BrainPost extends Activity {
                             "\nBeta2: " + eegPower.highBeta +
                             "\nGamma1: " + eegPower.lowGamma +
                             "\nGamma2: " + eegPower.midGamma + "\n\n");
-                    int alpha = (eegPower.lowAlpha + eegPower.highAlpha) / 2;
-                    int beta = (eegPower.lowBeta + eegPower.highBeta) / 2;
-                    int gamma = (eegPower.lowGamma + eegPower.midGamma) / 2;
-                    nameValuePairs.add(new BasicNameValuePair("delta", Integer.toString(eegPower.delta)));
-                    nameValuePairs.add(new BasicNameValuePair("theta", Integer.toString(eegPower.theta)));
-                    nameValuePairs.add(new BasicNameValuePair("alpha", Integer.toString(alpha)));
-                    nameValuePairs.add(new BasicNameValuePair("beta", Integer.toString(beta)));
-                    nameValuePairs.add(new BasicNameValuePair("gamma", Integer.toString(gamma)));
+                    alpha = (eegPower.lowAlpha + eegPower.highAlpha) / 2;
+                    beta = (eegPower.lowBeta + eegPower.highBeta) / 2;
+                    gamma = (eegPower.lowGamma + eegPower.midGamma) / 2;
+                    delta = eegPower.delta;
+                    theta = eegPower.theta;
+
 
                     break;
                 default:
                     break;
             }
+
+            nameValuePairs.add(new BasicNameValuePair("meditation", Integer.toString(meditation)));
+            nameValuePairs.add(new BasicNameValuePair("attention", Integer.toString(attention)));
+            nameValuePairs.add(new BasicNameValuePair("theta", Integer.toString(theta)));
+            nameValuePairs.add(new BasicNameValuePair("delta", Integer.toString(delta)));
+            nameValuePairs.add(new BasicNameValuePair("alpha", Integer.toString(alpha)));
+            nameValuePairs.add(new BasicNameValuePair("beta", Integer.toString(beta)));
+            nameValuePairs.add(new BasicNameValuePair("gamma", Integer.toString(gamma)));
 
             HttpClient httpclient = HttpClientBuilder.create().build();
 
@@ -229,7 +246,7 @@ public class BrainPost extends Activity {
                 int responseCode = response.getStatusLine().getStatusCode();
                 String responseText = Integer.toString(responseCode);
                 Log.i("HTTP POST:", "HTTP POST : " + responseText);
-                nameValuePairs.clear();
+
 
 
          /*Checking response */
@@ -244,12 +261,15 @@ public class BrainPost extends Activity {
 
 
             } catch (IOException e) {
-            
+
                 Log.e("HTTP Error:", e.toString());
             }
 
+            nameValuePairs.clear();
 
         }
+
+
     };
 
     public void doStuff(View view) {
