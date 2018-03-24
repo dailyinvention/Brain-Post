@@ -160,7 +160,7 @@ public class BrainPost extends Activity {
 
             HttpClient httpclient = HttpClientBuilder.create().build();
 
-            HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
+            HttpPost httpPost = new HttpPost(connection);
             HttpResponse response;
 
             httpPost.setHeader("Content-Type",
