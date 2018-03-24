@@ -12,25 +12,19 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
-
 import com.neurosky.thinkgear.TGDevice;
 import com.neurosky.thinkgear.TGEegPower;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -82,74 +76,14 @@ public class BrainPost extends Activity {
     	tgDevice.close();
         super.onDestroy();
     }
-/*
-    private class PostBrainInput extends AsyncTask<List<NameValuePair>, Void, Void> {
 
-        @SafeVarargs
-        protected final Void doInBackground(List<NameValuePair>... postList) {
-            HttpClient httpclient = HttpClientBuilder.create().build();
-
-            HttpPost httpPost = new HttpPost("http://192.168.1.118:8080/api/neurobrainpost");
-            HttpResponse response;
-
-            httpPost.setHeader("Content-Type",
-                    "application/x-www-form-urlencoded;charset=UTF-8");
-            try {
-                httpPost.setEntity(new UrlEncodedFormEntity(postList[0]));
-                httpclient.execute(httpPost);
-
-                //Get the response
-
-
-                    response = httpclient.execute(httpPost);
-
-                    int responseCode = response.getStatusLine().getStatusCode();
-                    String responseText = Integer.toString(responseCode);
-                    Log.i("HTTP POST:", "HTTP POST : " + responseText);
-
-
-
-         /*Checking response */
-/*
-                    InputStream in = response.getEntity().getContent(); //Get the data in the entity
-                    Log.i("HTTP RESPONSE", "HTTP POST : " + in.toString());
-
-                    //Print result
-                    Log.i("HTTP Result:", response.toString());
-
-
-
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                Log.e("HTTP Error:", e.toString());
-            }
-
-
-            return null;
-        }
-
-        protected void onPostExecute(Void result) {
-            nameValuePairs = new ArrayList<>();
-        }
-
-
-
-
-    }
-*/
     /**
      * Handles messages from TGDevice
      */
     private final Handler handler = new Handler() {
         @Override
-
         public void handleMessage(Message msg) {
-
-
             switch (msg.what) {
-
-
-
                 case TGDevice.MSG_STATE_CHANGE:
                     nameValuePairs.clear();
                     switch (msg.arg1) {
@@ -171,7 +105,6 @@ public class BrainPost extends Activity {
                         case TGDevice.STATE_DISCONNECTED:
                             tv.append("Disconnected mang\n");
                     }
-
                     break;
                 case TGDevice.MSG_POOR_SIGNAL:
                     //signal = msg.arg1;
@@ -212,8 +145,6 @@ public class BrainPost extends Activity {
                     gamma = (eegPower.lowGamma + eegPower.midGamma) / 2;
                     delta = eegPower.delta;
                     theta = eegPower.theta;
-
-
                     break;
                 default:
                     break;
@@ -247,9 +178,7 @@ public class BrainPost extends Activity {
                 String responseText = Integer.toString(responseCode);
                 Log.i("HTTP POST:", "HTTP POST : " + responseText);
 
-
-
-         /*Checking response */
+                /*Checking response */
 
                 InputStream in = response.getEntity().getContent(); //Get the data in the entity
                 Log.i("HTTP RESPONSE", "HTTP POST : " + in.toString());
@@ -257,19 +186,13 @@ public class BrainPost extends Activity {
                 //Print result
                 Log.i("HTTP Result:", response.toString());
 
-
-
-
             } catch (IOException e) {
 
                 Log.e("HTTP Error:", e.toString());
             }
 
             nameValuePairs.clear();
-
         }
-
-
     };
 
     public void doStuff(View view) {
