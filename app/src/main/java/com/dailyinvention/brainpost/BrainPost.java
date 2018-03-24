@@ -38,7 +38,7 @@ public class BrainPost extends Activity {
 	final boolean rawEnabled = false;
 
     InputStream is = null;
-    String connection = "http://192.168.1.118:8080/api/neurobrainpost";
+    String connection = "http://192.168.1.136:8080/api/neurobrainpost";
     int heartrate;
     List<NameValuePair> nameValuePairs = new CopyOnWriteArrayList<>();
     private AsyncTask PostBrain;
