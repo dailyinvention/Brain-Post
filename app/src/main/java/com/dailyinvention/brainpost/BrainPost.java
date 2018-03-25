@@ -162,7 +162,7 @@ public class BrainPost extends Activity {
     private void connectWebSocket() {
         URI uri;
         try {
-            uri = new URI("ws://192.168.1.136:8080");
+            uri = new URI("ws://192.168.1.136:8080/?id=2");
         } catch (URISyntaxException e) {
             e.printStackTrace();
             return;
